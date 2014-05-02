@@ -308,6 +308,7 @@ public class Worker {
         private void process(StartTestCommand testCommand) throws Exception {
             try {
                 log.info("Starting test");
+                log.info(testCommand.toString());
 
                 if (test == null) {
                     throw new IllegalStateException("No running test found");
@@ -317,6 +318,9 @@ public class Worker {
                 if (testCommand.clientOnly && clientInstance == null) {
                     passive = true;
                 }
+
+                log.info("mode:"+workerMode);
+                log.info("clientinstance:"+clientInstance);
 
                 test.start(passive);
             } catch (Exception e) {
