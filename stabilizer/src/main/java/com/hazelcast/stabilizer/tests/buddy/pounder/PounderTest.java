@@ -28,12 +28,14 @@ import com.hazelcast.config.OffHeapMemoryConfig;
 import com.hazelcast.config.SerializationConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.logging.ILogger;
+import com.hazelcast.logging.Logger;
 import com.hazelcast.memory.MemorySize;
 import com.hazelcast.stabilizer.tests.AbstractTest;
 import com.hazelcast.stabilizer.tests.TestRunner;
 import com.hazelcast.stabilizer.tests.buddy.pounder.model.Result;
 import com.hazelcast.stabilizer.tests.buddy.pounder.model.StorageType;
-import org.apache.log4j.Logger;
+import com.hazelcast.stabilizer.worker.ExceptionReporter;
 
 import javax.cache.CacheManager;
 import java.util.ArrayList;
@@ -49,12 +51,11 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class PounderTest extends AbstractTest {
 
-    private static final Logger LOGGER = Logger.getLogger(PounderTest.class);
+    private final static ILogger log = Logger.getLogger(PounderTest.class);
 
     private final AtomicBoolean warmup = new AtomicBoolean(true);
     private final AtomicLong maxBatchTimeMillis = new AtomicLong(0);
     private final AtomicLong maxGetTimeMillis = new AtomicLong(0);
-    private final AtomicBoolean killed = new AtomicBoolean(false);
 
     private ExecutorService executorService;
     private HazelcastInstance hazelcastInstance;
@@ -66,7 +67,7 @@ public class PounderTest extends AbstractTest {
     public StorageType storageType = StorageType.OFFHEAP;
     public int threadCount = 20;
     public int entryCount = 100000;
-    public String offheapSize = "1G";
+    public String offheapSize = "2G";
     public int maxNearCacheCount = 10;
     public int batchCount = 100000;
     public long maxValueSize = 10000;
@@ -116,14 +117,14 @@ public class PounderTest extends AbstractTest {
                     }
 
                     if (iteration % logFrequency == 0) {
-                        LOGGER.info(Thread.currentThread().getName() + " At iteration: " + iteration);
+                        log.info(Thread.currentThread().getName() + " At iteration: " + iteration);
                     }
                     iteration++;
                 }
             } catch (RuntimeException e) {
                 throw e;
             } catch (Exception e) {
-                throw new RuntimeException();
+                throw new RuntimeException(e);
             } finally {
                 executorService.shutdown();
                 hazelcastInstance.shutdown();
@@ -202,7 +203,7 @@ public class PounderTest extends AbstractTest {
 
     public static void log(String message, Object... params) {
         String msg = String.format(message, params);
-        LOGGER.info(msg);
+        log.info(msg);
     }
 
     public class PounterLoadTask implements Callable<long[]> {
@@ -242,43 +243,49 @@ public class PounderTest extends AbstractTest {
         public long[] call()
                 throws Exception {
 
-            value = buildValue();
-            long startTime = System.nanoTime();
+            try {
 
-            for (long i = startIndex; i < endIndex; i++) {
-                if ((i + 1) % batchCount == 0) {
-                    logAndResetValues(startTime);
-                    startTime = System.nanoTime();
-                }
+                value = buildValue();
+                long startTime = System.nanoTime();
 
-                boolean write = isWrite();
-                if (warmup || write) {
-                    String key = createKeyFromCount(i);
-                    cache.put(key, value.clone());
-                    writeCount++;
-                }
-
-                if (!warmup && !write) {
-                    long getTime = 0;
-                    if (readCount % threadCount == 0) {
-                        getTime = System.nanoTime();
+                for (long i = startIndex; i < endIndex; i++) {
+                    if ((i + 1) % batchCount == 0) {
+                        logAndResetValues(startTime);
+                        startTime = System.nanoTime();
                     }
 
-                    long randomIndex = pickNextReadNumber(i, currentSize);
-                    readEntry(createKeyFromCount(randomIndex));
-                    if (getTime > 0) {
-                        long temp = System.nanoTime() - getTime;
-                        if (temp > maxGetTimeNanos) {
-                            maxGetTimeNanos = temp;
+                    boolean write = isWrite();
+                    if (warmup || write) {
+                        String key = createKeyFromCount(i);
+                        cache.put(key, value.clone());
+                        writeCount++;
+                    }
+
+                    if (!warmup && !write) {
+                        long getTime = 0;
+                        if (readCount % threadCount == 0) {
+                            getTime = System.nanoTime();
                         }
-                    }
-                    readCount++;
-                }
-            }
 
-            long maxBatchTimeMillis = TimeUnit.NANOSECONDS.toMillis(maxBatchTimeNanos);
-            long maxGetTimeMillis = TimeUnit.NANOSECONDS.toMillis(maxGetTimeNanos);
-            return new long[]{maxBatchTimeMillis, maxGetTimeMillis};
+                        long randomIndex = pickNextReadNumber(i, currentSize);
+                        readEntry(createKeyFromCount(randomIndex));
+                        if (getTime > 0) {
+                            long temp = System.nanoTime() - getTime;
+                            if (temp > maxGetTimeNanos) {
+                                maxGetTimeNanos = temp;
+                            }
+                        }
+                        readCount++;
+                    }
+                }
+
+                long maxBatchTimeMillis = TimeUnit.NANOSECONDS.toMillis(maxBatchTimeNanos);
+                long maxGetTimeMillis = TimeUnit.NANOSECONDS.toMillis(maxGetTimeNanos);
+                return new long[]{maxBatchTimeMillis, maxGetTimeMillis};
+            } catch (Throwable t) {
+                ExceptionReporter.report(t);
+                throw t;
+            }
         }
 
         private long pickNextReadNumber(long i, int currentSize) {
@@ -386,6 +393,6 @@ public class PounderTest extends AbstractTest {
         HazelcastInstance hz = buildHazelcastInstance(test);
         TestRunner testRunner = new TestRunner();
         testRunner.setHazelcastInstance(hz);
-        testRunner.run(test, 60);
+        testRunner.run(test, 600);
     }
 }
