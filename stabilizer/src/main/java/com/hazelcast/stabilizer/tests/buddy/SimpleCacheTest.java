@@ -78,8 +78,6 @@ public class SimpleCacheTest extends AbstractTest {
         logger = Logger.getLogger(getClass());
 
         memoryStats = MemoryStatsUtil.getMemoryStats(instance);
-
-        memoryStats = MemoryStatsUtil.getMemoryStats(instance);
         CacheManager cm = new HazelcastCachingProvider(instance).getCacheManager();
         cacheManager = cm.unwrap(HazelcastCacheManager.class);
 
