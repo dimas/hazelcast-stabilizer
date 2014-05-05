@@ -55,13 +55,6 @@ public class SimpleCacheTest extends AbstractTest {
     public int logFrequency = 10000;
     public int performanceUpdateFrequency = 10000;
 
-    static {
-        System.setProperty("hazelcast.version.check.enabled", "false");
-        System.setProperty("hazelcast.socket.bind.any", "false");
-        System.setProperty("java.net.preferIPv4Stack", "true");
-        System.setProperty("hazelcast.multicast.group", "224.35.57.79");
-        System.setProperty("hazelcast.memory.print.stats", "true");
-    }
 
     @Override
     public void localSetup() throws Exception {
