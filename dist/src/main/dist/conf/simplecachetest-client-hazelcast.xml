@@ -19,13 +19,11 @@
     <serialization>
         <use-native-byte-order>true</use-native-byte-order>
         <allow-unsafe>true</allow-unsafe>
-
     </serialization>
 
 
     <off-heap-memory enabled="true">
         <size unit="GIGABYTES" value="1"/>
-
     </off-heap-memory>
 
     <near-cache name="default">
