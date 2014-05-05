@@ -19,8 +19,7 @@
     </repositories>
 
     <properties>
-        <!-- we want to remain java 1.6 compatible -->
-        <java.version>1.6</java.version>
+        <java.version>1.7</java.version>
         <junit.version>4.11</junit.version>
         <hazelcast.version>3.3-EA3</hazelcast.version>
         <jopt.version>4.4</jopt.version>
