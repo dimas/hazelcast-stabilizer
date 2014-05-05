@@ -49,12 +49,9 @@ public class SimpleCacheTest extends AbstractTest {
     public int entryCount = 10 * 1000;
     public int getPercentage = 40;
     public int putPercentage = 40;
-    public boolean load = false;
-    public boolean binary = false;
     public int valueSize = 1024;
     public int logFrequency = 10000;
     public int performanceUpdateFrequency = 10000;
-
 
     @Override
     public void localSetup() throws Exception {
