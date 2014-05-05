@@ -18,9 +18,8 @@
     </network>
 
     <serialization>
-        <allow-unsafe>true</allow-unsafe>
         <use-native-byte-order>true</use-native-byte-order>
-
+        <allow-unsafe>true</allow-unsafe>
     </serialization>
 
 
