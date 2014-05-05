@@ -40,9 +40,7 @@ public class SimpleCacheTest extends AbstractTest {
 
     private HazelcastInstance instance;
     private HazelcastCacheManager cacheManager;
-    private ILogger logger;
     private Stats[] allStats;
-    private ValueFactory factory;
     private String value;
 
     //properties.
@@ -69,13 +67,10 @@ public class SimpleCacheTest extends AbstractTest {
     public void localSetup() throws Exception {
         instance = getTargetInstance();
 
-        this.factory = binary ? ByteArrayValueFactory.newInstance(false) : SampleValueFactory.newInstance(false);
         this.allStats = new Stats[threadCount];
         for (int i = 0; i < threadCount; i++) {
             allStats[i] = new Stats();
         }
-
-        logger = Logger.getLogger(getClass());
 
         memoryStats = MemoryStatsUtil.getMemoryStats(instance);
         CacheManager cm = new HazelcastCachingProvider(instance).getCacheManager();
