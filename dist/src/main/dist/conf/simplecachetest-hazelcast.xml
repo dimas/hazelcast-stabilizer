@@ -2,10 +2,16 @@
                                hazelcast-config-3.3.xsd"
            xmlns="http://www.hazelcast.com/schema/config"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-
     <group>
         <name>workers</name>
     </group>
+
+    <properties>
+        <property name="hazelcast.version.check.enabled">false</property>
+        <property name="java.net.preferIPv4Stack">true</property>
+        <property name="hazelcast.memory.print.stats">true</property>
+        <property name="hazelcast.version.check.enabled">false</property>
+    </properties>
 
     <network>
         <port port-count="200" auto-increment="true">5701</port>
