@@ -17,8 +17,8 @@
 
 
     <serialization>
-        <allow-unsafe>true</allow-unsafe>
         <use-native-byte-order>true</use-native-byte-order>
+        <allow-unsafe>true</allow-unsafe>
 
     </serialization>
 
@@ -29,11 +29,9 @@
     </off-heap-memory>
 
     <near-cache name="default">
-        <in-memory-format>OFFHEAP</in-memory-format>
-        <invalidate-on-change>true</invalidate-on-change>
         <eviction-policy>LRU</eviction-policy>
-
+        <invalidate-on-change>true</invalidate-on-change>
+        <in-memory-format>OFFHEAP</in-memory-format>
     </near-cache>
-
 
 </hazelcast-client>
